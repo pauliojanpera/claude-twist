@@ -113,3 +113,20 @@ Two things are deliberate guesses, flagged so they are not mistaken for settled:
   phone: start a session, and drive a full turn — twist, speak, twist, hear the answer read back.
 
 Run no formatter of your own; the build's own tasks are the whole toolchain.
+
+## Cutting a release
+
+A tag does it: pushing `v<major>.<minor>.<patch>` runs `.github/workflows/release.yml`, which tests,
+lints, assembles a signed release APK, verifies the signature and publishes a GitHub release with the
+APK attached. The tag is the only trigger, and the version is read from it — nothing in the tree
+carries the version of a release.
+
+The signing key is **not** in the repository and must never be put there. It lives under
+`~/.android-keystores/` on the author's machine, and CI restores it from repository secrets
+(`ANDROID_KEYSTORE`, base64, plus its password, alias and key password). Losing the key means no
+installed copy can ever be upgraded again, only uninstalled and replaced.
+
+A signed APK builds locally the same way, passing `keystoreFile`, `keystorePassword`, `keyAlias`,
+`keyPassword`, `versionName` and `versionCode` as `-P` properties. Without `keystoreFile` the release
+APK comes out unsigned and installs nowhere; the workflow's verify step is what keeps such an APK out
+of a release.
