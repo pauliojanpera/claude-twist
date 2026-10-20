@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import net.miettii.claudetwist.composer.ClaudeAppControl
 import net.miettii.claudetwist.composer.DEFAULT_TARGET_PACKAGE_NAME
+import net.miettii.claudetwist.gesture.TwistSensitivity
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
@@ -24,6 +25,7 @@ data class DriveSettings(
     val controlDescriptions: Map<ClaudeAppControl, String> = ClaudeAppControl.defaultDescriptions(),
     val shieldTouchesDuringSession: Boolean = true,
     val sessionEnabled: Boolean = false,
+    val twistSensitivity: TwistSensitivity = TwistSensitivity.OneTwist,
 )
 
 class SettingsRepository(private val context: Context) {
@@ -33,6 +35,7 @@ class SettingsRepository(private val context: Context) {
         val controlOverrides = stringPreferencesKey("control_overrides")
         val shieldTouches = booleanPreferencesKey("shield_touches")
         val sessionEnabled = booleanPreferencesKey("session_enabled")
+        val twistSensitivity = stringPreferencesKey("twist_sensitivity")
     }
 
     val settings: Flow<DriveSettings> = context.dataStore.data.map { stored ->
@@ -43,6 +46,9 @@ class SettingsRepository(private val context: Context) {
                 decodeControlOverrides(stored[Keys.controlOverrides].orEmpty()),
             shieldTouchesDuringSession = stored[Keys.shieldTouches] ?: true,
             sessionEnabled = stored[Keys.sessionEnabled] ?: false,
+            twistSensitivity = TwistSensitivity.entries
+                .firstOrNull { it.name == stored[Keys.twistSensitivity] }
+                ?: TwistSensitivity.OneTwist,
         )
     }
 
@@ -58,6 +64,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setSessionEnabled(enabled: Boolean) = edit { stored ->
         stored[Keys.sessionEnabled] = enabled
+    }
+
+    suspend fun setTwistSensitivity(sensitivity: TwistSensitivity) = edit { stored ->
+        stored[Keys.twistSensitivity] = sensitivity.name
     }
 
     /** Teach one control the description the installed Claude app publishes for it. */

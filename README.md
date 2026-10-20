@@ -26,9 +26,14 @@ Android's accessibility service and presses buttons.
 
 A low alert tone means the twist did nothing — usually the Claude app is not the app in front.
 
-The gesture is a twist about the phone's long axis, out and back twice, inside a second and a half.
-It is recognised from the gyroscope, and deliberately not from a shake: walking swings a pocketed
-phone about its *other* axes, so a stride never trips it.
+The gesture is a brisk twist about the phone's long axis, out and back. It is recognised from the
+gyroscope, and deliberately not from a shake: walking swings a pocketed phone about its *other* axes,
+so a stride never trips it.
+
+How much of a twist it takes is a setting, because only a walk settles it. **One twist** is the
+default and the quickest; **one and a half** carries the return stroke on past where a pocket's own
+roll would stop; **two twists** is the least mistakable and the slowest. If a pocket starts driving
+the Claude app by itself, demand more.
 
 ## Setting it up
 

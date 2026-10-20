@@ -14,6 +14,8 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import net.miettii.claudetwist.MainActivity
 import net.miettii.claudetwist.R
@@ -21,6 +23,7 @@ import net.miettii.claudetwist.composer.ClaudeAppDriverService
 import net.miettii.claudetwist.data.SettingsRepository
 import net.miettii.claudetwist.feedback.Cue
 import net.miettii.claudetwist.feedback.CueSounds
+import net.miettii.claudetwist.gesture.TwistSensitivity
 import net.miettii.claudetwist.gesture.TwistSensor
 import net.miettii.claudetwist.notify.Notifier
 
@@ -39,11 +42,9 @@ class WalkSessionService : LifecycleService() {
             .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_TAG)
             .apply { setReferenceCounted(false) }
     }
-    private val twists by lazy {
-        TwistSensor(this) {
-            ClaudeAppDriverService.connectedInstance?.respondToTwist() ?: cues.play(Cue.DriveFailed)
-        }
-    }
+    // Built only once the chosen sensitivity has been read: that choice is the gesture's shape.
+    private var twists: TwistSensor? = null
+    private var hasStarted = false
 
     private val notificationActions = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -70,18 +71,34 @@ class WalkSessionService : LifecycleService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         startInForeground()
-        lifecycleScope.launch {
-            val settings = SettingsRepository(this@WalkSessionService).readSettings()
-            screen.raise(shieldTouches = settings.shieldTouchesDuringSession)
-        }
+        // A redelivered start must not raise a second overlay or schedule a second limit.
+        if (hasStarted) return START_STICKY
+        hasStarted = true
         if (!wakeLock.isHeld) wakeLock.acquire(SESSION_LIMIT_MILLIS)
-        twists.startListening()
-        cues.play(Cue.SessionStarted)
+        lifecycleScope.launch {
+            val repository = SettingsRepository(this@WalkSessionService)
+            screen.raise(shieldTouches = repository.readSettings().shieldTouchesDuringSession)
+            cues.play(Cue.SessionStarted)
+            // The gesture may be retuned mid-walk, so the listener follows the setting rather than
+            // staying as it was when the session started.
+            repository.settings
+                .map { it.twistSensitivity }
+                .distinctUntilChanged()
+                .collect(::listenForTwists)
+        }
         lifecycleScope.launch {
             delay(SESSION_LIMIT_MILLIS)
             stop(this@WalkSessionService)
         }
         return START_STICKY
+    }
+
+    /** Listen for the gesture the holder chose, in place of any listener an earlier start left. */
+    private fun listenForTwists(sensitivity: TwistSensitivity) {
+        twists?.stopListening()
+        twists = TwistSensor(this, sensitivity) {
+            ClaudeAppDriverService.connectedInstance?.respondToTwist() ?: cues.play(Cue.DriveFailed)
+        }.also(TwistSensor::startListening)
     }
 
     private fun startInForeground() {
@@ -116,7 +133,7 @@ class WalkSessionService : LifecycleService() {
     )
 
     override fun onDestroy() {
-        twists.stopListening()
+        twists?.stopListening()
         screen.lower()
         if (wakeLock.isHeld) wakeLock.release()
         unregisterReceiver(notificationActions)

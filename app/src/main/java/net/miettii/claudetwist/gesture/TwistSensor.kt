@@ -12,11 +12,15 @@ import android.hardware.SensorManager
 // a background app only through a foreground service — the session is one — and with the screen off
 // only while the CPU is awake, which the session holds a wake lock for. A wake-up gyroscope, where
 // the phone has one, wakes the CPU for each sample by itself. Callbacks arrive on the main thread.
-class TwistSensor(context: Context, private val onTwist: () -> Unit) : SensorEventListener {
+class TwistSensor(
+    context: Context,
+    sensitivity: TwistSensitivity,
+    private val onTwist: () -> Unit,
+) : SensorEventListener {
 
     private val sensors = context.getSystemService(SensorManager::class.java)
     private val gyroscope: Sensor? = sensors?.let { pickGyroscope(it) }
-    private val detector = TwistDetector()
+    private val detector = TwistDetector(sensitivity)
     private var listening = false
 
     /** Whether the phone can recognise the gesture at all; without a gyroscope nothing can drive. */

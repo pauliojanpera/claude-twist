@@ -31,6 +31,12 @@
     <string name="session_stop">Stop session</string>
     <string name="shield_touches_label">Shield the screen from pocket touches, and dim it</string>
 
+    <string name="sensitivity_heading">Gesture</string>
+    <string name="sensitivity_explanation">How much of a twist it takes. Start with one twist; if a pocket drives the Claude app by itself, demand more.</string>
+    <string name="sensitivity_one_twist">One twist</string>
+    <string name="sensitivity_one_and_a_half_twists">One and a half</string>
+    <string name="sensitivity_two_twists">Two twists</string>
+
     <string name="controls_heading">Controls</string>
     <string name="controls_explanation">The content descriptions the Claude app publishes for the controls this app presses. If a Claude app release renames one, put the app in the state that shows it, read the screen below, and correct the field.</string>
     <string name="controls_default">Shipped default: %1$s</string>

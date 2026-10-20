@@ -1,16 +1,15 @@
 package net.miettii.claudetwist.gesture
 
-// Recognises the drive gesture in gyroscope samples: the phone twisted about its long axis back and
-// forth twice — out, back, out, back — within [windowNanos]. A swing is an excursion of the angular
-// speed about the long axis past [threshold] rad/s, and only a swing the other way from the last one
-// counts, so a phone swinging on a walking or running leg (rotation about the other axes) or
-// tumbling one way in a pocket drives nothing. A completed gesture is followed by [refractoryNanos]
-// in which nothing counts, so one twist presses one control. Pure arithmetic on samples, free of
-// Android types, so it is unit-tested on the JVM.
+// Recognises the drive gesture in gyroscope samples: the phone twisted about its long axis out and
+// back, as many swings as [sensitivity] demands and inside the window it allows. A swing is an
+// excursion of the angular speed about the long axis past [threshold] rad/s, and only a swing the
+// other way from the last one counts, so a phone swinging on a walking or running leg (rotation about
+// the other axes) or tumbling one way in a pocket drives nothing. A completed gesture is followed by
+// [refractoryNanos] in which nothing counts, so one gesture presses one control. Pure arithmetic on
+// samples, free of Android types, so it is unit-tested on the JVM.
 class TwistDetector(
+    private val sensitivity: TwistSensitivity = TwistSensitivity.OneTwist,
     private val threshold: Float = 4f,
-    private val swings: Int = 4,
-    private val windowNanos: Long = 1_500_000_000L,
     private val refractoryNanos: Long = 1_000_000_000L,
 ) {
     // Start times of the swings counted so far, oldest first; they alternate in direction.
@@ -32,14 +31,14 @@ class TwistDetector(
         excursion = direction
         if (!startsSwing || timestampNanos < refractoryUntil) return false
 
-        while (swingStarts.isNotEmpty() && timestampNanos - swingStarts.first() > windowNanos) {
+        while (swingStarts.isNotEmpty() && timestampNanos - swingStarts.first() > sensitivity.windowNanos) {
             swingStarts.removeFirst()
         }
         if (swingStarts.isEmpty()) lastSwing = 0
         if (direction == lastSwing) return false
         swingStarts.addLast(timestampNanos)
         lastSwing = direction
-        if (swingStarts.size < swings) return false
+        if (swingStarts.size < sensitivity.swings) return false
 
         forgetSwingsSoFar()
         refractoryUntil = timestampNanos + refractoryNanos
