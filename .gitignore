@@ -8,6 +8,11 @@ build/
 # Local machine configuration — the SDK path is per machine, never committed
 local.properties
 
+# Signing material. The release key lives outside the tree; these patterns are a second fence.
+*.jks
+*.keystore
+keystore.properties
+
 # IDE
 .idea/
 *.iml

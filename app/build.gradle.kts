@@ -17,6 +17,18 @@ fun gitOutput(vararg args: String): String = runCatching {
 val buildCommit = gitOutput("log", "-1", "--format=%h").ifBlank { "dev" }
 val buildDate = gitOutput("log", "-1", "--format=%cd", "--date=format:%Y%m%d").ifBlank { "00000000" }
 
+// The release identity, overridable so a tagged build stamps the version it was cut from.
+fun buildInput(name: String, environmentName: String): String? =
+    (project.findProperty(name) as String?) ?: System.getenv(environmentName)
+
+val releaseVersionName = buildInput("versionName", "VERSION_NAME") ?: "0.1.0"
+val releaseVersionCode = buildInput("versionCode", "VERSION_CODE")?.toIntOrNull() ?: 1
+
+// Release signing from a keystore handed in at build time and never committed — it lives outside the
+// tree, and in CI it is restored from a secret. Without it the release APK comes out unsigned, which
+// installs nowhere: the honest outcome of having no key, and what the release workflow verifies.
+val keystoreFile = buildInput("keystoreFile", "KEYSTORE_FILE")
+
 android {
     namespace = "net.miettii.claudetwist"
     compileSdk = 34
@@ -25,15 +37,29 @@ android {
         applicationId = "net.miettii.claudetwist"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = releaseVersionCode
+        versionName = releaseVersionName
 
         buildConfigField("String", "BUILD_COMMIT", "\"$buildCommit\"")
         buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
     }
 
+    signingConfigs {
+        if (keystoreFile != null && file(keystoreFile).exists()) {
+            create("release") {
+                storeFile = file(keystoreFile)
+                storePassword = buildInput("keystorePassword", "KEYSTORE_PASSWORD")
+                keyAlias = buildInput("keyAlias", "KEY_ALIAS")
+                keyPassword = buildInput("keyPassword", "KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
+            // R8 is left off: the app is small, and shrinking it would buy little against the risk
+            // of trimming something Compose or DataStore reaches reflectively.
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

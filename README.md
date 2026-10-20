@@ -37,7 +37,12 @@ the Claude app by itself, demand more.
 
 ## Setting it up
 
-1. Build and install: `./gradlew installDebug`, or take the APK from a CI run's artifacts.
+1. Install the APK from [Releases](https://github.com/pauliojanpera/claude-twist/releases), or build
+   it yourself with `./gradlew installDebug`.
+
+   A release APK and a locally built debug one are signed differently, so neither can replace the
+   other in place: switching between them means uninstalling first, which also clears the app's
+   settings.
 2. Open the app and work down the readiness list:
    - **Accessibility service** — the app cannot read or press the Claude app without it.
    - **Display over other apps** — keeps the screen on behind the Claude app, and shields the screen

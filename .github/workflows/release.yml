@@ -1,0 +1,80 @@
+name: Release
+
+# A tag is the only trigger: the tag names the version, and the APK is signed with the release key,
+# so a release cannot be cut by accident from an arbitrary commit.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Derive the version from the tag
+        id: version
+        run: |
+          set -euo pipefail
+          name="${GITHUB_REF_NAME#v}"
+          major="${name%%.*}"; rest="${name#*.}"
+          minor="${rest%%.*}"; patch="${rest#*.}"; patch="${patch%%-*}"
+          # One number per semver field, so every later tag sorts above every earlier one and an
+          # upgrade is never refused as a downgrade.
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "code=$(( major * 10000 + minor * 100 + patch ))" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the signing keystore
+        env:
+          ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+        run: |
+          set -euo pipefail
+          if [ -z "$ANDROID_KEYSTORE" ]; then
+            echo "::error::ANDROID_KEYSTORE is unset, so nothing could sign this release"
+            exit 1
+          fi
+          printf '%s' "$ANDROID_KEYSTORE" | base64 -d > "$RUNNER_TEMP/release.jks"
+
+      - name: Test, lint and assemble
+        env:
+          KEYSTORE_FILE: ${{ runner.temp }}/release.jks
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
+        run: ./gradlew --no-daemon testDebugUnitTest lintDebug assembleRelease
+
+      - name: Name the APK after the release
+        id: apk
+        run: |
+          set -euo pipefail
+          out="claude-twist-${GITHUB_REF_NAME}.apk"
+          mv app/build/outputs/apk/release/app-release.apk "$out"
+          echo "path=$out" >> "$GITHUB_OUTPUT"
+
+      # An unsigned APK installs nowhere, and a missing secret would otherwise produce one quietly.
+      - name: Verify the APK is signed
+        run: |
+          set -euo pipefail
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | tail -1)"
+          "$apksigner" verify --print-certs "${{ steps.apk.outputs.path }}"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "${{ steps.apk.outputs.path }}" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
