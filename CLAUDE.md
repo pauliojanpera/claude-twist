@@ -90,7 +90,14 @@ controls.
 
 ## Known tuning points
 
-Two things are deliberate guesses, flagged so they are not mistaken for settled:
+Three things are deliberate guesses, flagged so they are not mistaken for settled:
+
+- **How much of a twist it takes.** `TwistSensitivity` pairs a swing count with a window, and the
+  two may not be set apart: a window mitred for four swings lets a single lazy roll out and back a
+  second later count, which is the motion a thigh makes. The default is `OneTwist`, which no walk has
+  yet judged. If a pocket drives the Claude app by itself, the answer is a longer gesture, not a
+  higher threshold — the threshold is what rejects *slow* motion, the swing count what rejects
+  *simple* motion.
 
 - **A cue may land in the dictation.** `Cue.ListeningStarted` plays right after the microphone opens,
   because a cue before the press would lie about a press that then failed. If the beep turns up in

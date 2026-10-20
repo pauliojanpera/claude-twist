@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -54,6 +55,7 @@ import net.miettii.claudetwist.composer.ClaudeAppControl
 import net.miettii.claudetwist.composer.ClaudeAppDriverService
 import net.miettii.claudetwist.data.DriveSettings
 import net.miettii.claudetwist.data.SettingsRepository
+import net.miettii.claudetwist.gesture.TwistSensitivity
 import net.miettii.claudetwist.gesture.TwistSensor
 import net.miettii.claudetwist.session.ScreenAwakeOverlay
 import net.miettii.claudetwist.session.WalkSessionService
@@ -177,11 +179,30 @@ private fun SessionScreen(settings: SettingsRepository) {
             )
         }
 
+        Text(stringResource(R.string.sensitivity_heading), style = MaterialTheme.typography.titleSmall)
+        Text(stringResource(R.string.sensitivity_explanation), style = MaterialTheme.typography.bodySmall)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TwistSensitivity.entries.forEach { sensitivity ->
+                FilterChip(
+                    selected = stored.twistSensitivity == sensitivity,
+                    onClick = { scope.launch { settings.setTwistSensitivity(sensitivity) } },
+                    label = { Text(stringResource(sensitivity.labelResource)) },
+                )
+            }
+        }
+
         HorizontalDivider()
 
         ControlsSection(stored, settings, scope)
     }
 }
+
+private val TwistSensitivity.labelResource: Int
+    get() = when (this) {
+        TwistSensitivity.OneTwist -> R.string.sensitivity_one_twist
+        TwistSensitivity.OneAndAHalfTwists -> R.string.sensitivity_one_and_a_half_twists
+        TwistSensitivity.TwoTwists -> R.string.sensitivity_two_twists
+    }
 
 private data class Readiness(
     val hasGyroscope: Boolean,
