@@ -42,6 +42,12 @@ in the commit message.
   one and work there.
 - Do not suggest deleting branches. Avoid force pushes.
 - The remote is reached through the `github-personal` SSH host alias.
+- **Committing, pushing, a pull request, merging and tagging are each asked for separately.** None
+  follows from the one before, nor from the work being finished. Do the work, say what state it is
+  in, and wait.
+
+Where these instructions do not call for a step, there is no step. Do not infer one, and do not
+supply one out of initiative — an unasked-for step is overhead the user has to answer for.
 
 ## What this app rests on, and how it breaks
 
