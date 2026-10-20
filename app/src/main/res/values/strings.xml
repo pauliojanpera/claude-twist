@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Claude Twist</string>
+
+    <string name="accessibility_service_description">Presses the Claude app\'s dictation and narration controls when you twist the phone, so a walk can be spent talking to Claude with the phone in a pocket.</string>
+
+    <string name="channel_session_name">Walk session</string>
+    <string name="channel_session_description">Shown while the twist gesture is being listened for</string>
+
+    <string name="session_ongoing_title">Listening for twists</string>
+    <string name="session_ongoing_text">Twist to speak, twist again to send</string>
+    <string name="session_action_stop">Stop</string>
+    <string name="session_action_discard">Discard dictation</string>
+
+    <string name="readiness_heading">Readiness</string>
+    <string name="readiness_no_gyroscope">This phone has no gyroscope, so the twist gesture cannot be recognised.</string>
+    <string name="readiness_driver">Accessibility service enabled</string>
+    <string name="readiness_driver_detail">Without it nothing can read or press the Claude app.</string>
+    <string name="readiness_open_accessibility">Open accessibility settings</string>
+    <string name="readiness_overlay">Display over other apps</string>
+    <string name="readiness_overlay_detail">Needed to keep the screen on behind the Claude app, and to shield the pocket from its own touches.</string>
+    <string name="readiness_open_overlay">Open overlay settings</string>
+    <string name="readiness_battery">Exempt from battery optimisation</string>
+    <string name="readiness_battery_detail">Without the exemption a long session may be cut short.</string>
+    <string name="readiness_open_battery">Ask for the exemption</string>
+    <string name="readiness_restricted_settings">A sideloaded build is held behind restricted settings on Android 13 and later: if the accessibility toggle will not stay on, open this app\'s App info, and in the overflow menu choose Allow restricted settings.</string>
+
+    <string name="session_heading">Session</string>
+    <string name="session_explanation">Open the Claude app on the conversation you want to talk to, start the session, and pocket the phone. One twist starts speech input; the next sends it. The finished response is read aloud, and a twist during it starts the next turn.</string>
+    <string name="session_start">Start session</string>
+    <string name="session_stop">Stop session</string>
+    <string name="shield_touches_label">Shield the screen from pocket touches, and dim it</string>
+
+    <string name="controls_heading">Controls</string>
+    <string name="controls_explanation">The content descriptions the Claude app publishes for the controls this app presses. If a Claude app release renames one, put the app in the state that shows it, read the screen below, and correct the field.</string>
+    <string name="controls_default">Shipped default: %1$s</string>
+    <string name="controls_target_package">Claude app package</string>
+    <string name="controls_read_screen">Read the screen in front</string>
+    <string name="controls_reset">Reset to defaults</string>
+</resources>

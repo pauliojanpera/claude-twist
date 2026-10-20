@@ -1,0 +1,15 @@
+# Build output
+build/
+.gradle/
+.kotlin/
+*.apk
+*.aab
+
+# Local machine configuration — the SDK path is per machine, never committed
+local.properties
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+captures/

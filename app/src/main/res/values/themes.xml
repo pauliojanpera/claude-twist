@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose paints the whole screen; the platform theme only has to keep the system bars out of
+         the way and give the window a background that does not flash against the Compose colours. -->
+    <style name="Theme.ClaudeTwist" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">?android:attr/colorBackground</item>
+    </style>
+</resources>

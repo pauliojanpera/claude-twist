@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- No android:packageNames, deliberately: the Controls screen reads the content descriptions of
+     whatever window is in front, which is how a renamed control is relearned, and a Claude app
+     published under another package is then reached by changing one setting rather than this file.
+     Which app may be driven is enforced in code, against the configured target package.
+
+     The driver reads the tree on demand instead of reacting to events — a chat redraws constantly —
+     so the event types below are declared only because a service must declare some. -->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowContentChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:canPerformGestures="true"
+    android:canRetrieveWindowContent="true"
+    android:description="@string/accessibility_service_description"
+    android:notificationTimeout="1000" />
