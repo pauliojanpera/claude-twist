@@ -114,8 +114,10 @@ Three things are deliberate guesses, flagged so they are not mistaken for settle
   keep new logic that can be tested this way out of the Android classes.
 - `./gradlew lintDebug` — **kept at zero findings.** Do not add a suppression without a comment
   saying why it is allowed here.
-- `./gradlew installDebug` — onto the phone. Enabling the accessibility service needs
-  "Allow restricted settings" from the app's App info on Android 13+, because the build is sideloaded.
+- `./gradlew installDebug` — onto the phone. Android 13+ then refuses the accessibility switch,
+  showing "Restricted setting" in its place, until "Allow restricted settings" is chosen from the
+  app's App info; installing over adb does not avoid it. `adb install -r -i com.android.vending`
+  does, by declaring an installer the restriction does not key on.
 - The accessibility driving, the overlay and the cues cannot be unit-tested. Exercise them on the
   phone: start a session, and drive a full turn — twist, speak, twist, hear the answer read back.
 
