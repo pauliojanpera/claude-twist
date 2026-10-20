@@ -31,6 +31,17 @@
     <string name="session_stop">Stop session</string>
     <string name="shield_touches_label">Shield the screen from pocket touches, and dim it</string>
 
+    <string name="trigger_heading">Headset button</string>
+    <string name="trigger_explanation">A Bluetooth headset\'s media buttons go to whatever is playing — the Claude app, while it reads a response. The one press that escapes is redial, which the headset sends as a call: this app can answer for that call, cancel it, and step the loop instead.</string>
+    <string name="trigger_hazard">If this app is not there to answer — killed, role revoked, or too slow — the call is placed, and the button rings the last number you dialled. Emergency numbers are never diverted.</string>
+    <string name="trigger_divert_label">Read a dial attempt during a session as a trigger</string>
+    <string name="readiness_call_redirection">Call redirection role</string>
+    <string name="readiness_call_redirection_detail">Needed before Telecom will ask this app about an outgoing call. Only the headset button needs it; the twist does not.</string>
+    <string name="readiness_open_call_redirection">Ask for the role</string>
+    <string name="readiness_phone_state">Phone state access</string>
+    <string name="readiness_phone_state_detail">Used to tell an emergency number from an ordinary one. Without it no dial attempt is ever diverted, so the headset button does nothing.</string>
+    <string name="readiness_grant_phone_state">Grant access</string>
+
     <string name="sensitivity_heading">Gesture</string>
     <string name="sensitivity_explanation">How much of a twist it takes. Start with one twist; if a pocket drives the Claude app by itself, demand more.</string>
     <string name="sensitivity_one_twist">One twist</string>

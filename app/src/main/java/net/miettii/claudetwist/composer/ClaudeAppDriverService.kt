@@ -58,16 +58,17 @@ class ClaudeAppDriverService : AccessibilityService() {
     override fun onInterrupt() = Unit
 
     /**
-     * Drive one step of the loop. A twist while a response is still awaited abandons that wait: the
-     * holder has decided to speak again rather than hear the answer out.
+     * Drive one step of the loop, whichever trigger asked. A trigger while a response is still
+     * awaited abandons that wait: the holder has decided to speak again rather than hear the answer
+     * out.
      */
-    fun respondToTwist() {
+    fun driveOneStep() {
         narrationWatch?.cancel()
         if (pressSequence?.isActive == true) return
-        pressSequence = scope.launch { pressPlan(planPressesForTwist(readClaudeApp())) }
+        pressSequence = scope.launch { pressPlan(planPressesForTrigger(readClaudeApp())) }
     }
 
-    /** Throw away what was spoken instead of sending it, for a gesture the pocket made by itself. */
+    /** Throw away what was spoken instead of sending it, for a trigger the pocket fired by itself. */
     fun discardDictation() {
         narrationWatch?.cancel()
         pressSequence?.cancel()

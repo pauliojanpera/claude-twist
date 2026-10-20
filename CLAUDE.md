@@ -88,6 +88,30 @@ then read the `content-desc` of every node, and for each one find the nearest an
 state in turn (idle composer, dictating, narrating) and dump again; a state shows only its own
 controls.
 
+## Two triggers, one step
+
+`planPressesForTrigger` is the whole vocabulary, and every trigger shares it: a trigger means "drive
+one step", and which step follows from the reading alone. Keep it that way — a trigger must never
+carry its own meaning, or the two would drift apart.
+
+- **The twist** (`gesture/`) — the gyroscope, via the session's `TwistSensor`.
+- **The headset button** (`telecom/`) — a `CallRedirectionService`. A Bluetooth button reaches
+  neither the key-event pipeline (measured: zero `EV_KEY` events over two captures) nor this app
+  through the media buttons (they go to whoever holds the media button session, which is
+  `com.anthropic.claude/TTSPlayback` while it narrates). Its redial press, HFP `AT+BLDN`, becomes an
+  ordinary outgoing call, and that is the one thing an app may answer for.
+
+`DialAttemptRedirectionService.mayDivert` is the safety-critical function in this tree. Its rule is
+that **every doubt resolves to placing the call**: a diverted call that should have been placed is a
+nuisance, a cancelled call that was meant to be made is not. An emergency number is never diverted,
+whatever the platform promises — AOSP has a commit fixing a bug where emergency numbers *were*
+reaching redirection services, so the guard stays regardless. It also reads nothing from storage:
+Telecom is waiting on that method, so the session publishes what it needs in
+`WalkSessionService.activeSession`.
+
+`minSdk` is 29 because the call redirection role is: guarding it for older platforms would be
+scaffolding for devices this app cannot serve anyway.
+
 ## Known tuning points
 
 Three things are deliberate guesses, flagged so they are not mistaken for settled:

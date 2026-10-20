@@ -35,7 +35,7 @@ android {
 
     defaultConfig {
         applicationId = "net.miettii.claudetwist"
-        minSdk = 26
+        minSdk = 29
         targetSdk = 34
         versionCode = releaseVersionCode
         versionName = releaseVersionName

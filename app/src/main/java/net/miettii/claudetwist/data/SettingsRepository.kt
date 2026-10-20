@@ -26,6 +26,9 @@ data class DriveSettings(
     val shieldTouchesDuringSession: Boolean = true,
     val sessionEnabled: Boolean = false,
     val twistSensitivity: TwistSensitivity = TwistSensitivity.OneTwist,
+    // Reading a dial attempt as a trigger. On by default, because the call redirection role is
+    // granted for nothing else; the switch is what turns the behaviour off without revoking it.
+    val divertDialAttemptsDuringSession: Boolean = true,
 )
 
 class SettingsRepository(private val context: Context) {
@@ -36,6 +39,7 @@ class SettingsRepository(private val context: Context) {
         val shieldTouches = booleanPreferencesKey("shield_touches")
         val sessionEnabled = booleanPreferencesKey("session_enabled")
         val twistSensitivity = stringPreferencesKey("twist_sensitivity")
+        val divertDialAttempts = booleanPreferencesKey("divert_dial_attempts")
     }
 
     val settings: Flow<DriveSettings> = context.dataStore.data.map { stored ->
@@ -49,6 +53,7 @@ class SettingsRepository(private val context: Context) {
             twistSensitivity = TwistSensitivity.entries
                 .firstOrNull { it.name == stored[Keys.twistSensitivity] }
                 ?: TwistSensitivity.OneTwist,
+            divertDialAttemptsDuringSession = stored[Keys.divertDialAttempts] ?: true,
         )
     }
 
@@ -68,6 +73,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setTwistSensitivity(sensitivity: TwistSensitivity) = edit { stored ->
         stored[Keys.twistSensitivity] = sensitivity.name
+    }
+
+    suspend fun setDivertDialAttemptsDuringSession(divert: Boolean) = edit { stored ->
+        stored[Keys.divertDialAttempts] = divert
     }
 
     /** Teach one control the description the installed Claude app publishes for it. */

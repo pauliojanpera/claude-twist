@@ -13,7 +13,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 // The readings below are the control sets the Claude app actually publishes in each state, as read
-// off com.anthropic.claude 1.261016.51 — see ClaudeAppControl.
+// off com.anthropic.claude 1.261016.51 — see ClaudeAppControl. Every trigger shares these rules, so
+// they are stated once here and hold for the twist and the headset button alike.
 class ClaudeAppReadingTest {
 
     private val composerIdle = ClaudeAppReading(setOf(StartSpeechInput, NarrateResponse, RetryMessage))
@@ -22,23 +23,23 @@ class ClaudeAppReadingTest {
     private val claudeAppNotInFront = ClaudeAppReading.NOTHING_VISIBLE
 
     @Test
-    fun aTwistOnTheIdleComposerStartsSpeaking() {
-        assertEquals(listOf(StartSpeechInput), planPressesForTwist(composerIdle))
+    fun aTriggerOnTheIdleComposerStartsSpeaking() {
+        assertEquals(listOf(StartSpeechInput), planPressesForTrigger(composerIdle))
     }
 
     @Test
-    fun aTwistWhileDictatingSendsWhatWasSpoken() {
-        assertEquals(listOf(SendDictation), planPressesForTwist(dictating))
+    fun aTriggerWhileDictatingSendsWhatWasSpoken() {
+        assertEquals(listOf(SendDictation), planPressesForTrigger(dictating))
     }
 
     @Test
-    fun aTwistWhileNarratingBreaksOffAndStartsTheNextTurn() {
-        assertEquals(listOf(PauseNarration, StartSpeechInput), planPressesForTwist(narrating))
+    fun aTriggerWhileNarratingBreaksOffAndStartsTheNextTurn() {
+        assertEquals(listOf(PauseNarration, StartSpeechInput), planPressesForTrigger(narrating))
     }
 
     @Test
-    fun aTwistWithTheClaudeAppOutOfFrontPressesNothing() {
-        assertTrue(planPressesForTwist(claudeAppNotInFront).isEmpty())
+    fun aTriggerWithTheClaudeAppOutOfFrontPressesNothing() {
+        assertTrue(planPressesForTrigger(claudeAppNotInFront).isEmpty())
     }
 
     @Test

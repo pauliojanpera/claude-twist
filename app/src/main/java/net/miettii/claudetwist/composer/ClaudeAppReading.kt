@@ -36,14 +36,14 @@ value class ClaudeAppReading(val visibleControls: Set<ClaudeAppControl>) {
 }
 
 /**
- * The controls to press, in order, when the holder twists the phone while [reading] holds — the
- * whole gesture vocabulary of this app, as one pure function.
+ * The controls to press, in order, when a trigger fires while [reading] holds — the whole vocabulary
+ * of this app, as one pure function, and the same for every trigger there is.
  *
- * One gesture drives one step of the loop, and what that step is follows from the state the reading
+ * One trigger drives one step of the loop, and what that step is follows from the state the reading
  * names: start speaking, send what was spoken, or break off a narration to speak again. Pressing
  * the composer's microphone does not itself stop a narration, so leaving one takes two presses.
  */
-fun planPressesForTwist(reading: ClaudeAppReading): List<ClaudeAppControl> = when {
+fun planPressesForTrigger(reading: ClaudeAppReading): List<ClaudeAppControl> = when {
     reading.isDictating -> listOf(SendDictation)
     reading.isNarrating -> listOf(PauseNarration, StartSpeechInput)
     reading.acceptsSpeechInput -> listOf(StartSpeechInput)
