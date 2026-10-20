@@ -23,7 +23,7 @@
     <string name="readiness_battery">Exempt from battery optimisation</string>
     <string name="readiness_battery_detail">Without the exemption a long session may be cut short.</string>
     <string name="readiness_open_battery">Ask for the exemption</string>
-    <string name="readiness_restricted_settings">Android 13 and later refuses this switch to an app that did not come from an app store, and shows “Restricted setting — for your security, this setting is currently unavailable” in its place. Open this app\'s App info, choose Allow restricted settings from the overflow menu, and the switch works. Installing over adb does not avoid this.</string>
+    <string name="readiness_restricted_settings">Android 13 and later refuses this switch to an app that did not come from an app store, and shows “Restricted setting — for your security, this setting is currently unavailable” in its place. Take Settings → Apps → Claude Twist → ⋮ → Allow restricted settings, and the switch works. Installing over adb does not avoid this.</string>
 
     <string name="session_heading">Session</string>
     <string name="session_explanation">Open the Claude app on the conversation you want to talk to, start the session, and pocket the phone. One twist starts speech input; the next sends it. The finished response is read aloud, and a twist during it starts the next turn.</string>
