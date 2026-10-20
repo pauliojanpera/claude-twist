@@ -48,9 +48,20 @@ the Claude app by itself, demand more.
    - **Display over other apps** — keeps the screen on behind the Claude app, and shields the screen
      from pocket touches.
    - **Battery optimisation exemption** — keeps a long session from being cut short.
-3. On Android 13 and later a sideloaded build is held behind *restricted settings*: if the
-   accessibility toggle will not stay on, open the app's **App info**, and from the overflow menu
-   choose **Allow restricted settings**.
+3. Android 13 and later refuses the accessibility switch to an app that did not come from an app
+   store, showing **"Restricted setting — For your security, this setting is currently unavailable"**
+   in its place. The way through is **Settings → Apps → Claude Twist → ⋮ → Allow restricted
+   settings**, after which the switch works. The ⋮ menu is at the top right, and the entry appears
+   there only once the restriction has been met once. Installing over adb does not avoid this.
+
+   (Confirmed on OxygenOS, Android 14.)
+
+   Where that menu item is missing, declaring an installer on the way in is the other way out — the
+   restriction keys off where the app came from:
+
+   ```sh
+   adb install -r -i com.android.vending claude-twist-v0.1.0.apk
+   ```
 4. Open the Claude app on the conversation you want to talk to, press **Start session**, pocket the
    phone.
 
