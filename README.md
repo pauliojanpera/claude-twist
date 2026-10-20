@@ -26,6 +26,28 @@ Android's accessibility service and presses buttons.
 
 A low alert tone means the twist did nothing — usually the Claude app is not the app in front.
 
+## Two triggers
+
+A twist is one way to drive a step. A **Bluetooth headset's button** is the other, and the two are
+interchangeable — each drives exactly the same step, decided by what is on the Claude app's screen.
+
+The button takes a detour, because Android gives it no straight road. A Bluetooth button never
+reaches the key-event pipeline at all, and the media buttons are delivered to whichever app is
+playing — the Claude app, while it reads a response aloud. The one press that escapes both is
+**redial**, which the headset sends as HFP's `AT+BLDN`: the Bluetooth stack turns it into an ordinary
+outgoing call, and an outgoing call is something an app may answer for. So, while a session is
+running, this app answers for that call, cancels it, and steps the loop instead. Outside a session
+every call is placed as asked, and redial keeps working.
+
+> **What this costs.** If the app is not there to answer — killed, role revoked, service unbound, or
+> simply too slow — Telecom places the call, and the button rings the last number you dialled, from
+> your pocket. Emergency numbers are never diverted, and a number the app cannot vet is not diverted
+> either: every doubt resolves to placing the call.
+
+To enable it, grant the **call redirection role** and **phone state access** in the app's Headset
+button section. The twist needs neither. Without phone state access no dial attempt is ever
+diverted, so the button does nothing — that is the fail-safe, not a bug.
+
 The gesture is a brisk twist about the phone's long axis, out and back. It is recognised from the
 gyroscope, and deliberately not from a shake: walking swings a pocketed phone about its *other* axes,
 so a stride never trips it.
@@ -78,7 +100,7 @@ com.anthropic.claude 1.261016.51.
 
 ## Requirements
 
-A gyroscope, Android 8.0 or later, and the Claude app installed.
+A gyroscope, Android 10 or later, and the Claude app installed.
 
 ## Licence
 

@@ -1,6 +1,7 @@
 package net.miettii.claudetwist
 
 import android.Manifest
+import android.app.role.RoleManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -138,6 +139,13 @@ private fun SessionScreen(settings: SettingsRepository) {
         onDispose { owner?.lifecycle?.removeObserver(observer) }
     }
 
+    val roleLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        readiness = readReadiness(context)
+    }
+    val phoneStateLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        readiness = readReadiness(context)
+    }
+
     Column(
         modifier = Modifier.padding(16.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -193,6 +201,54 @@ private fun SessionScreen(settings: SettingsRepository) {
 
         HorizontalDivider()
 
+        Text(stringResource(R.string.trigger_heading), style = MaterialTheme.typography.titleSmall)
+        Text(stringResource(R.string.trigger_explanation), style = MaterialTheme.typography.bodySmall)
+        Surface(
+            color = MaterialTheme.colorScheme.errorContainer,
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                stringResource(R.string.trigger_hazard),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.padding(12.dp),
+            )
+        }
+        if (readiness.isCallRedirectionAvailable) {
+            RequirementRow(
+                met = readiness.isCallRedirectionRoleHeld,
+                label = stringResource(R.string.readiness_call_redirection),
+                detail = stringResource(R.string.readiness_call_redirection_detail),
+                actionLabel = stringResource(R.string.readiness_open_call_redirection),
+                onAction = {
+                    callRedirectionRole(context)
+                        ?.createRequestRoleIntent(RoleManager.ROLE_CALL_REDIRECTION)
+                        ?.let(roleLauncher::launch)
+                },
+            )
+            RequirementRow(
+                met = readiness.hasPhoneStateAccess,
+                label = stringResource(R.string.readiness_phone_state),
+                detail = stringResource(R.string.readiness_phone_state_detail),
+                actionLabel = stringResource(R.string.readiness_grant_phone_state),
+                onAction = { phoneStateLauncher.launch(Manifest.permission.READ_PHONE_STATE) },
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Switch(
+                    checked = stored.divertDialAttemptsDuringSession,
+                    onCheckedChange = { scope.launch { settings.setDivertDialAttemptsDuringSession(it) } },
+                )
+                Text(
+                    stringResource(R.string.trigger_divert_label),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(start = 8.dp),
+                )
+            }
+        }
+
+        HorizontalDivider()
+
         ControlsSection(stored, settings, scope)
     }
 }
@@ -209,6 +265,9 @@ private data class Readiness(
     val isDriverEnabled: Boolean,
     val canDrawOverlay: Boolean,
     val isExemptFromBatteryOptimization: Boolean,
+    val isCallRedirectionAvailable: Boolean,
+    val isCallRedirectionRoleHeld: Boolean,
+    val hasPhoneStateAccess: Boolean,
 ) {
     // The overlay and the battery exemption only make a session survive longer; without the driver
     // or a gyroscope there is nothing to start.
@@ -220,7 +279,20 @@ private fun readReadiness(context: Context) = Readiness(
     isDriverEnabled = isDriverEnabled(context),
     canDrawOverlay = ScreenAwakeOverlay(context).isPermitted,
     isExemptFromBatteryOptimization = isExemptFromBatteryOptimization(context),
+    isCallRedirectionAvailable = callRedirectionRole(context) != null,
+    isCallRedirectionRoleHeld = callRedirectionRole(context)
+        ?.isRoleHeld(RoleManager.ROLE_CALL_REDIRECTION) == true,
+    hasPhoneStateAccess = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) ==
+        PackageManager.PERMISSION_GRANTED,
 )
+
+/**
+ * The role manager, but only where the call redirection role exists to be asked for — a device may
+ * not carry the role even on a platform that defines it, and then the headset button is not on offer.
+ */
+private fun callRedirectionRole(context: Context): RoleManager? =
+    context.getSystemService(RoleManager::class.java)
+        ?.takeIf { it.isRoleAvailable(RoleManager.ROLE_CALL_REDIRECTION) }
 
 @Composable
 private fun ReadinessSection(readiness: Readiness, context: Context) {

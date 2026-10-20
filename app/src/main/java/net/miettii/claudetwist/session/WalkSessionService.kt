@@ -14,8 +14,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import net.miettii.claudetwist.MainActivity
 import net.miettii.claudetwist.R
@@ -45,6 +43,7 @@ class WalkSessionService : LifecycleService() {
     // Built only once the chosen sensitivity has been read: that choice is the gesture's shape.
     private var twists: TwistSensor? = null
     private var hasStarted = false
+    private var listeningSensitivity: TwistSensitivity? = null
 
     private val notificationActions = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -81,10 +80,13 @@ class WalkSessionService : LifecycleService() {
             cues.play(Cue.SessionStarted)
             // The gesture may be retuned mid-walk, so the listener follows the setting rather than
             // staying as it was when the session started.
-            repository.settings
-                .map { it.twistSensitivity }
-                .distinctUntilChanged()
-                .collect(::listenForTwists)
+            repository.settings.collect { live ->
+                activeSession = ActiveSession(divertsDialAttempts = live.divertDialAttemptsDuringSession)
+                if (live.twistSensitivity != listeningSensitivity) {
+                    listeningSensitivity = live.twistSensitivity
+                    listenForTwists(live.twistSensitivity)
+                }
+            }
         }
         lifecycleScope.launch {
             delay(SESSION_LIMIT_MILLIS)
@@ -97,7 +99,7 @@ class WalkSessionService : LifecycleService() {
     private fun listenForTwists(sensitivity: TwistSensitivity) {
         twists?.stopListening()
         twists = TwistSensor(this, sensitivity) {
-            ClaudeAppDriverService.connectedInstance?.respondToTwist() ?: cues.play(Cue.DriveFailed)
+            ClaudeAppDriverService.connectedInstance?.driveOneStep() ?: cues.play(Cue.DriveFailed)
         }.also(TwistSensor::startListening)
     }
 
@@ -133,6 +135,7 @@ class WalkSessionService : LifecycleService() {
     )
 
     override fun onDestroy() {
+        activeSession = null
         twists?.stopListening()
         screen.lower()
         if (wakeLock.isHeld) wakeLock.release()
@@ -142,7 +145,14 @@ class WalkSessionService : LifecycleService() {
         super.onDestroy()
     }
 
+    // What a session is, to the triggers that need to know one is under way. Null when none is.
+    data class ActiveSession(val divertsDialAttempts: Boolean)
+
     companion object {
+        // Owned by the running service: set when a session starts, cleared when it ends.
+        @Volatile
+        var activeSession: ActiveSession? = null
+
         private const val ONGOING_NOTIFICATION_ID = 1
         private const val WAKE_LOCK_TAG = "claudetwist:session"
         // Longer than any walk, short enough that a session left running is not a dead battery.

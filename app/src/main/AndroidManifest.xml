@@ -10,6 +10,8 @@
     <!-- Keeps the screen on behind the Claude app, and shields the pocket from its own touches. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- Only to tell an emergency number from an ordinary one before a dial attempt is diverted. -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <uses-feature
         android:name="android.hardware.sensor.gyroscope"
@@ -53,6 +55,17 @@
             <meta-data
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <!-- Reads the call a headset button tries to place as a trigger (see the service). Telecom
+             binds it only while the holder has granted this app the call redirection role. -->
+        <service
+            android:name=".telecom.DialAttemptRedirectionService"
+            android:exported="true"
+            android:permission="android.permission.BIND_CALL_REDIRECTION_SERVICE">
+            <intent-filter>
+                <action android:name="android.telecom.CallRedirectionService" />
+            </intent-filter>
         </service>
 
     </application>
